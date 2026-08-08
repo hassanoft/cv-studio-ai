@@ -1,7 +1,15 @@
 /**
  * database/db.js
  *
- * Connexion SQLite (better-sqlite3) + creation du schema.
+ * Connexion SQLite (module natif "node:sqlite", Node >= 22.5) + creation du schema.
+ * Aucune dependance native a compiler (contrairement a better-sqlite3) :
+ * ce module est integre directement a Node.js, ce qui evite les echecs
+ * de build lies a node-gyp/python/toolchain C++, aussi bien sur Render
+ * que sous Termux.
+ *
+ * Note : l'API SQLite de Node est encore marquee "experimentale" (le
+ * warning au demarrage est normal) mais est stable en pratique pour cet
+ * usage (requetes preparees, transactions, pragmas).
  *
  * IMPORTANT — portabilite :
  * Ce fichier est le SEUL point de contact direct avec le moteur SQL.
@@ -13,7 +21,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const Database = require('better-sqlite3');
+const { DatabaseSync } = require('node:sqlite');
 const { env } = require('../config/env');
 const logger = require('../utils/logger');
 
@@ -23,9 +31,9 @@ if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
 
-const db = new Database(env.DB_PATH);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+const db = new DatabaseSync(env.DB_PATH);
+db.exec('PRAGMA journal_mode = WAL;');
+db.exec('PRAGMA foreign_keys = ON;');
 
 function initSchema() {
   db.exec(`
