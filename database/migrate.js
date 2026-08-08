@@ -6,7 +6,10 @@
  */
 
 const db = require('./db');
+const { env } = require('../config/env');
 const logger = require('../utils/logger');
 
-logger.info('[MIGRATE] Base de donnees prete ->', db.name);
+// `db.exec` ci-dessus (via require('./db')) a deja cree/verifie le schema.
+void db;
+logger.info('[MIGRATE] Base de donnees prete ->', env.DB_PATH);
 process.exit(0);
