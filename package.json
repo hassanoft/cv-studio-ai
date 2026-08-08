@@ -1,0 +1,24 @@
+{
+  "name": "cv-studio-ai",
+  "version": "1.0.0",
+  "description": "CV Studio AI - Bot Telegram professionnel de generation de CV (PNG) et de portfolios web pour le marche ivoirien / ouest-africain.",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "db:init": "node database/migrate.js",
+    "dev": "node index.js"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "puppeteer": "^22.15.0",
+    "telegraf": "^4.16.3"
+  }
+}

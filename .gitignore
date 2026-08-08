@@ -1,0 +1,10 @@
+node_modules/
+.env
+database/data/*.sqlite
+database/data/*.sqlite-journal
+public/cv-exports/*
+!public/cv-exports/.gitkeep
+public/portfolios/*
+!public/portfolios/.gitkeep
+*.log
+.DS_Store

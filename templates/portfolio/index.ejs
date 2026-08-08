@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title><%= prenom %> <%= nom %> — <%= metier %></title>
+<meta name="description" content="Portfolio professionnel de <%= prenom %> <%= nom %>, <%= metier %>." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;900&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #14202E;
+    --ink-soft: #1E2E42;
+    --paper: #F7F8FA;
+    --card: #FFFFFF;
+    --slate: #5A6472;
+    --slate-light: #8993A3;
+    --gold: #C89B3C;
+    --gold-deep: #8C6A1F;
+    --line: #E4E7EC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, 'Segoe UI', Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  section { padding: 90px 8vw; max-width: 1180px; margin: 0 auto; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    font-weight: 600;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 18px;
+  }
+  .eyebrow::after { content: ''; flex: 0 0 60px; height: 1px; background: var(--line); }
+  h2.title { font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: 34px; margin-bottom: 34px; }
+
+  /* reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* ---------- NAV ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(20,32,46,0.92);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 8vw;
+  }
+  nav .brand { font-family: 'Fraunces', serif; font-weight: 700; color: #fff; font-size: 17px; }
+  nav .brand span { color: var(--gold); }
+  nav ul { list-style: none; display: flex; gap: 26px; }
+  nav ul li a { color: #C7CCD6; font-size: 12.5px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; }
+  nav ul li a:hover { color: var(--gold); }
+  .nav-toggle { display: none; }
+  @media (max-width: 760px) {
+    nav ul { display: none; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    background: linear-gradient(175deg, var(--ink) 0%, var(--ink-soft) 100%);
+    color: #fff;
+    padding: 90px 8vw 100px;
+    display: flex; align-items: center; gap: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 82% 18%, rgba(200,155,60,0.16), transparent 45%);
+    pointer-events: none;
+  }
+  .hero-photo {
+    width: 220px; height: 220px; border-radius: 50%; flex: none;
+    padding: 6px;
+    background: conic-gradient(from 180deg, var(--gold), var(--gold-deep), var(--gold));
+    position: relative; z-index: 1;
+  }
+  .hero-photo img, .hero-photo .empty {
+    width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--ink);
+  }
+  .hero-photo .empty {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ink); font-family: 'Fraunces', serif; font-size: 74px; color: var(--gold);
+  }
+  .hero-text { position: relative; z-index: 1; }
+  .hero-text .eyebrow { color: var(--gold); }
+  .hero-text .eyebrow::after { background: rgba(200,155,60,0.3); }
+  .hero-text h1 { font-family: 'Fraunces', serif; font-weight: 900; font-size: 52px; line-height: 1.05; margin-bottom: 14px; }
+  .hero-text .role { font-size: 16px; color: #C7CCD6; margin-bottom: 26px; }
+  .hero-contacts { display: flex; flex-wrap: wrap; gap: 14px 26px; font-size: 13px; color: #C7CCD6; }
+  .hero-contacts span { display: flex; align-items: center; gap: 8px; }
+  @media (max-width: 760px) {
+    .hero { flex-direction: column; text-align: center; padding-top: 60px; }
+    .hero-contacts { justify-content: center; }
+    .hero-text h1 { font-size: 38px; }
+  }
+
+  /* ---------- ABOUT ---------- */
+  .about-text { font-size: 16px; line-height: 1.85; color: var(--slate); max-width: 760px; }
+
+  /* ---------- SKILLS ---------- */
+  .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+  .skill-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px 18px; font-weight: 600; font-size: 13.5px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .skill-card::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex: none; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+  .tag-pill {
+    font-size: 12px; padding: 8px 16px; border-radius: 20px;
+    background: var(--card); border: 1px solid var(--line); color: var(--slate);
+  }
+
+  /* ---------- TIMELINE ---------- */
+  .timeline { border-left: 2px solid var(--line); padding-left: 30px; max-width: 760px; }
+  .timeline-item { position: relative; padding-bottom: 30px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-item::before {
+    content: ''; position: absolute; left: -36px; top: 5px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--paper); border: 3px solid var(--gold);
+  }
+  .timeline-period { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--gold-deep); font-weight: 600; margin-bottom: 4px; }
+  .timeline-title { font-size: 17px; font-weight: 700; }
+  .timeline-subtitle { font-size: 14px; color: var(--slate); margin-top: 3px; }
+
+  /* ---------- PROJECTS ---------- */
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px; }
+  .project-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .project-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(20,32,46,0.08); }
+  .project-card .num { font-family: 'IBM Plex Mono', monospace; color: var(--gold); font-size: 12px; margin-bottom: 10px; }
+  .project-card h3 { font-family: 'Fraunces', serif; font-size: 19px; margin-bottom: 10px; }
+  .project-card p { font-size: 13.5px; color: var(--slate); line-height: 1.6; margin-bottom: 14px; }
+  .project-card a.link { font-size: 12.5px; font-weight: 700; color: var(--gold-deep); }
+
+  /* ---------- GALLERY ---------- */
+  .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .gallery-grid img { width: 100%; height: 200px; object-fit: cover; border-radius: 12px; border: 1px solid var(--line); }
+
+  /* ---------- CONTACT ---------- */
+  .contact-section { background: linear-gradient(175deg, var(--ink) 0%, var(--ink-soft) 100%); color: #fff; }
+  .contact-section .eyebrow { color: var(--gold); }
+  .contact-section .eyebrow::after { background: rgba(200,155,60,0.3); }
+  .contact-grid { display: flex; flex-wrap: wrap; gap: 34px; align-items: flex-start; justify-content: space-between; }
+  .contact-info { font-size: 14px; color: #C7CCD6; line-height: 2; }
+  .social-buttons { display: flex; flex-wrap: wrap; gap: 12px; }
+  .social-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(200,155,60,0.35);
+    padding: 12px 18px; border-radius: 30px; font-size: 13px; font-weight: 600;
+    transition: background .2s ease, border-color .2s ease;
+  }
+  .social-btn:hover { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+  .social-btn .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); }
+  .social-btn:hover .dot { background: var(--ink); }
+
+  footer {
+    text-align: center; padding: 26px; font-size: 11px; letter-spacing: 1px;
+    color: var(--slate-light); background: var(--ink);
+  }
+  footer b { color: var(--gold); }
+</style>
+</head>
+<body>
+
+  <nav>
+    <div class="brand">CV STUDIO <span>AI</span></div>
+    <ul>
+      <li><a href="#about">À propos</a></li>
+      <li><a href="#skills">Compétences</a></li>
+      <li><a href="#experience">Expérience</a></li>
+      <% if (projects && projects.length) { %><li><a href="#projects">Projets</a></li><% } %>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- ================= HERO ================= -->
+  <header class="hero" id="accueil">
+    <div class="hero-photo">
+      <% if (photoDataUri) { %>
+        <img src="<%= photoDataUri %>" alt="Photo de <%= prenom %>" />
+      <% } else { %>
+        <div class="empty"><%= (prenom || '?').charAt(0).toUpperCase() %></div>
+      <% } %>
+    </div>
+    <div class="hero-text reveal">
+      <div class="eyebrow">Portfolio professionnel</div>
+      <h1><%= prenom %> <%= nom %></h1>
+      <div class="role"><%= metier %></div>
+      <div class="hero-contacts">
+        <% if (telephone) { %><span>📞 <%= telephone %></span><% } %>
+        <% if (email) { %><span>✉️ <%= email %></span><% } %>
+        <% if (adresse) { %><span>📍 <%= adresse %></span><% } %>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= ABOUT ================= -->
+  <% if (about) { %>
+  <section id="about" class="reveal">
+    <div class="eyebrow">À propos</div>
+    <h2 class="title">Présentation</h2>
+    <p class="about-text"><%= about %></p>
+  </section>
+  <% } %>
+
+  <!-- ================= SKILLS ================= -->
+  <% if ((competences && competences.length) || (langues && langues.length) || (interets && interets.length)) { %>
+  <section id="skills" class="reveal">
+    <div class="eyebrow">Savoir-faire</div>
+    <h2 class="title">Compétences &amp; langues</h2>
+    <% if (competences && competences.length) { %>
+    <div class="skills-grid">
+      <% competences.forEach(function(c){ %><div class="skill-card"><%= c %></div><% }) %>
+    </div>
+    <% } %>
+    <% if (langues && langues.length) { %>
+    <div class="tags">
+      <% langues.forEach(function(l){ %><span class="tag-pill">🗣 <%= l %></span><% }) %>
+    </div>
+    <% } %>
+    <% if (interets && interets.length) { %>
+    <div class="tags">
+      <% interets.forEach(function(i){ %><span class="tag-pill"><%= i %></span><% }) %>
+    </div>
+    <% } %>
+  </section>
+  <% } %>
+
+  <!-- ================= EXPERIENCE ================= -->
+  <% if (experiences && experiences.length) { %>
+  <section id="experience" class="reveal">
+    <div class="eyebrow">Parcours</div>
+    <h2 class="title">Expérience professionnelle</h2>
+    <div class="timeline">
+      <% experiences.forEach(function(e){ %>
+      <div class="timeline-item">
+        <% if (e.period) { %><div class="timeline-period"><%= e.period %></div><% } %>
+        <div class="timeline-title"><%= e.title %></div>
+        <% if (e.subtitle) { %><div class="timeline-subtitle"><%= e.subtitle %></div><% } %>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- ================= FORMATION ================= -->
+  <% if (etudes && etudes.length) { %>
+  <section id="formation" class="reveal">
+    <div class="eyebrow">Formation</div>
+    <h2 class="title">Études &amp; diplômes</h2>
+    <div class="timeline">
+      <% etudes.forEach(function(e){ %>
+      <div class="timeline-item">
+        <% if (e.period) { %><div class="timeline-period"><%= e.period %></div><% } %>
+        <div class="timeline-title"><%= e.title %></div>
+        <% if (e.subtitle) { %><div class="timeline-subtitle"><%= e.subtitle %></div><% } %>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- ================= PROJECTS ================= -->
+  <% if (projects && projects.length) { %>
+  <section id="projects" class="reveal">
+    <div class="eyebrow">Réalisations</div>
+    <h2 class="title">Projets</h2>
+    <div class="projects-grid">
+      <% projects.forEach(function(p, idx){ %>
+      <div class="project-card">
+        <div class="num"><%= String(idx + 1).padStart(2, '0') %></div>
+        <h3><%= p.title %></h3>
+        <% if (p.description) { %><p><%= p.description %></p><% } %>
+        <% if (p.link) { %><a class="link" href="<%= p.link %>" target="_blank" rel="noopener">Voir le projet →</a><% } %>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- ================= GALLERY ================= -->
+  <% if (gallery && gallery.length) { %>
+  <section id="gallery" class="reveal">
+    <div class="eyebrow">Galerie</div>
+    <h2 class="title">Aperçu visuel</h2>
+    <div class="gallery-grid">
+      <% gallery.forEach(function(g){ %><img src="<%= g %>" alt="Photo galerie" /><% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- ================= CONTACT ================= -->
+  <section id="contact" class="contact-section reveal">
+    <div class="eyebrow">Contact</div>
+    <h2 class="title" style="color:#fff;">Travaillons ensemble</h2>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <% if (telephone) { %>Téléphone : <%= telephone %><br /><% } %>
+        <% if (email) { %>Email : <%= email %><br /><% } %>
+        <% if (adresse) { %>Localisation : <%= adresse %><% } %>
+      </div>
+      <div class="social-buttons">
+        <% if (social && social.whatsapp) { %><a class="social-btn" href="<%= social.whatsapp %>" target="_blank" rel="noopener"><span class="dot"></span> WhatsApp</a><% } %>
+        <% if (social && social.telegram) { %><a class="social-btn" href="<%= social.telegram %>" target="_blank" rel="noopener"><span class="dot"></span> Telegram</a><% } %>
+        <% if (social && social.linkedin) { %><a class="social-btn" href="<%= social.linkedin %>" target="_blank" rel="noopener"><span class="dot"></span> LinkedIn</a><% } %>
+        <% if (social && social.github) { %><a class="social-btn" href="<%= social.github %>" target="_blank" rel="noopener"><span class="dot"></span> GitHub</a><% } %>
+        <% if (social && social.instagram) { %><a class="social-btn" href="<%= social.instagram %>" target="_blank" rel="noopener"><span class="dot"></span> Instagram</a><% } %>
+      </div>
+    </div>
+  </section>
+
+  <footer><b>CV Studio AI</b> · Portfolio généré le <%= generatedDate %></footer>
+
+  <script>
+    (function () {
+      var items = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        items.forEach(function (el) { el.classList.add('is-visible'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      items.forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+</body>
+</html>

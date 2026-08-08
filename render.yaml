@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: cv-studio-ai
+    env: node
+    plan: starter
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: BOT_MODE
+        value: webhook
+      - key: WEBHOOK_URL
+        sync: false
+      - key: WEBHOOK_PATH
+        value: /telegram/webhook
+      - key: PORT
+        value: 3000
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: DB_PATH
+        value: ./database/data/cvstudio.sqlite
+      - key: WAVE_PAYMENT_LINK
+        value: "https://pay.wave.com/m/M_ci_knlRyepWBd4f/c/ci/?amount="
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: ""
+      - key: NODE_ENV
+        value: production
+    disk:
+      name: cv-studio-data
+      mountPath: /opt/render/project/src/database/data
+      sizeGB: 1

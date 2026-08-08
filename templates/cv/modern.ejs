@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title><%= prenom %> <%= nom %> — CV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink: #14202E;
+    --ink-soft: #1E2E42;
+    --paper: #FBFBFA;
+    --slate: #5A6472;
+    --slate-light: #8993A3;
+    --gold: #C89B3C;
+    --gold-deep: #8C6A1F;
+    --line: #E4E7EC;
+  }
+  html, body {
+    width: 900px;
+    background: var(--paper);
+    font-family: 'Inter', -apple-system, 'Segoe UI', Arial, sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .sheet { display: flex; width: 900px; min-height: 1180px; background: var(--paper); }
+
+  /* ---------- SIDEBAR ---------- */
+  .sidebar {
+    width: 310px;
+    background: linear-gradient(175deg, var(--ink) 0%, var(--ink-soft) 100%);
+    color: #EDEFF3;
+    padding: 42px 30px 34px;
+    display: flex;
+    flex-direction: column;
+  }
+  .photo-wrap {
+    width: 132px; height: 132px;
+    border-radius: 50%;
+    padding: 5px;
+    background: conic-gradient(from 180deg, var(--gold), var(--gold-deep), var(--gold));
+    margin: 0 auto 22px;
+  }
+  .photo-wrap img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    border: 3px solid var(--ink);
+  }
+  .photo-wrap.empty {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--ink);
+  }
+  .photo-wrap.empty span {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 46px; color: var(--gold);
+  }
+  .name-block { text-align: center; margin-bottom: 6px; }
+  .name-block h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 700;
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: 0.2px;
+  }
+  .name-block .role {
+    margin-top: 8px;
+    font-size: 11px;
+    letter-spacing: 2.2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 600;
+  }
+  .seal {
+    margin: 22px auto 26px;
+    width: 100%;
+    border-top: 1px solid rgba(200,155,60,0.35);
+    border-bottom: 1px solid rgba(200,155,60,0.35);
+    padding: 9px 0;
+    text-align: center;
+    font-size: 9px;
+    letter-spacing: 1.6px;
+    text-transform: uppercase;
+    color: var(--slate-light);
+  }
+  .seal b { color: var(--gold); font-weight: 700; }
+
+  .side-section { margin-bottom: 24px; }
+  .side-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .side-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(200,155,60,0.3);
+  }
+
+  .contact-item {
+    display: flex; align-items: flex-start; gap: 9px;
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: #D9DCE3;
+    margin-bottom: 9px;
+    word-break: break-word;
+  }
+  .contact-item svg { flex: none; margin-top: 2px; }
+
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag {
+    font-size: 10.5px;
+    padding: 5px 10px;
+    border: 1px solid rgba(200,155,60,0.4);
+    border-radius: 20px;
+    color: #E7E4D8;
+  }
+
+  .skill-item { margin-bottom: 9px; }
+  .skill-name { font-size: 11.5px; color: #E4E6EB; margin-bottom: 5px; }
+  .skill-bar { height: 4px; border-radius: 3px; background: rgba(255,255,255,0.12); overflow: hidden; }
+  .skill-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--gold-deep), var(--gold)); }
+
+  .lang-item { display: flex; justify-content: space-between; font-size: 11.5px; color: #E4E6EB; margin-bottom: 7px; }
+
+  /* ---------- MAIN ---------- */
+  .main { flex: 1; padding: 46px 46px 40px; }
+  .main-section { margin-bottom: 30px; }
+  .main-label {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-deep);
+    font-weight: 700;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .main-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
+  .about-text { font-size: 13px; line-height: 1.75; color: var(--slate); max-width: 92%; }
+
+  .timeline { border-left: 2px solid var(--line); padding-left: 22px; }
+  .timeline-item { position: relative; padding-bottom: 20px; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -27px; top: 4px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2.5px solid var(--gold);
+  }
+  .timeline-period {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    font-size: 10.5px;
+    color: var(--gold-deep);
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+  .timeline-title { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .timeline-subtitle { font-size: 12px; color: var(--slate); margin-top: 2px; }
+
+  .footer-stamp {
+    margin-top: 36px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 9.5px; color: var(--slate-light);
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="sidebar">
+      <% if (photoDataUri) { %>
+        <div class="photo-wrap"><img src="<%= photoDataUri %>" alt="Photo" /></div>
+      <% } else { %>
+        <div class="photo-wrap empty"><span><%= (prenom || '?').charAt(0).toUpperCase() %></span></div>
+      <% } %>
+
+      <div class="name-block">
+        <h1><%= prenom %> <%= nom %></h1>
+        <div class="role"><%= metier %></div>
+      </div>
+
+      <div class="seal"><b>CV STUDIO AI</b> · DOCUMENT CERTIFIÉ · <%= generatedDate %></div>
+
+      <div class="side-section">
+        <div class="side-label">Contact</div>
+        <% if (telephone) { %>
+        <div class="contact-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <span><%= telephone %></span>
+        </div>
+        <% } %>
+        <% if (email) { %>
+        <div class="contact-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="2"><path d="M4 4h16v16H4z" opacity="0"/><path d="M2 6l10 7L22 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+          <span><%= email %></span>
+        </div>
+        <% } %>
+        <% if (adresse) { %>
+        <div class="contact-item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C89B3C" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span><%= adresse %></span>
+        </div>
+        <% } %>
+      </div>
+
+      <% if (competences && competences.length) { %>
+      <div class="side-section">
+        <div class="side-label">Compétences</div>
+        <% competences.forEach(function(c){ %>
+          <div class="skill-item">
+            <div class="skill-name"><%= c %></div>
+            <div class="skill-bar"><span style="width: 82%;"></span></div>
+          </div>
+        <% }) %>
+      </div>
+      <% } %>
+
+      <% if (langues && langues.length) { %>
+      <div class="side-section">
+        <div class="side-label">Langues</div>
+        <% langues.forEach(function(l){ %>
+          <div class="lang-item"><span><%= l %></span></div>
+        <% }) %>
+      </div>
+      <% } %>
+
+      <% if (interets && interets.length) { %>
+      <div class="side-section">
+        <div class="side-label">Centres d'intérêt</div>
+        <div class="tag-list">
+          <% interets.forEach(function(i){ %><span class="tag"><%= i %></span><% }) %>
+        </div>
+      </div>
+      <% } %>
+    </aside>
+
+    <!-- ================= MAIN ================= -->
+    <main class="main">
+      <% if (about) { %>
+      <section class="main-section">
+        <div class="main-label">À propos</div>
+        <p class="about-text"><%= about %></p>
+      </section>
+      <% } %>
+
+      <% if (experiences && experiences.length) { %>
+      <section class="main-section">
+        <div class="main-label">Expérience professionnelle</div>
+        <div class="timeline">
+          <% experiences.forEach(function(e){ %>
+          <div class="timeline-item">
+            <% if (e.period) { %><div class="timeline-period"><%= e.period %></div><% } %>
+            <div class="timeline-title"><%= e.title %></div>
+            <% if (e.subtitle) { %><div class="timeline-subtitle"><%= e.subtitle %></div><% } %>
+          </div>
+          <% }) %>
+        </div>
+      </section>
+      <% } %>
+
+      <% if (etudes && etudes.length) { %>
+      <section class="main-section">
+        <div class="main-label">Formation</div>
+        <div class="timeline">
+          <% etudes.forEach(function(e){ %>
+          <div class="timeline-item">
+            <% if (e.period) { %><div class="timeline-period"><%= e.period %></div><% } %>
+            <div class="timeline-title"><%= e.title %></div>
+            <% if (e.subtitle) { %><div class="timeline-subtitle"><%= e.subtitle %></div><% } %>
+          </div>
+          <% }) %>
+        </div>
+      </section>
+      <% } %>
+
+      <div class="footer-stamp">
+        <span>Généré via CV Studio AI — Bot Telegram</span>
+        <span><%= generatedDate %></span>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
