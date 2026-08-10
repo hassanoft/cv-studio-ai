@@ -10,6 +10,7 @@ const portfolioModel = require('../database/models/portfolioModel');
 const { formatDate, escapeMarkdownLegacy } = require('../utils/formatters');
 const { backToMenuInline } = require('../utils/keyboards');
 const { env } = require('../config/env');
+const { withRetry } = require('../utils/retry');
 const logger = require('../utils/logger');
 
 function register(bot) {
@@ -60,10 +61,14 @@ function register(bot) {
     }
 
     try {
-      await ctx.replyWithPhoto({ source: cv.file_path }, { caption: `📄 ${cv.full_name}` });
+      await withRetry(() => ctx.replyWithPhoto({ source: cv.file_path }, { caption: `📄 ${cv.full_name}` }), {
+        retries: 2,
+        delayMs: 1500,
+        label: 'renvoi du CV',
+      });
     } catch (err) {
       logger.error('[CREATIONS] Echec envoi CV:', err.message);
-      await ctx.reply("❌ Impossible de renvoyer ce fichier (peut-être supprimé du serveur).");
+      await ctx.reply("❌ Impossible de renvoyer ce fichier pour le moment (problème réseau). Réessayez dans un instant.");
     }
   });
 }
