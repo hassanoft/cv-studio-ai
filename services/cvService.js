@@ -51,7 +51,7 @@ async function generateCv(userId, wizardData) {
   const browser = await getBrowser();
   const page = await browser.newPage();
   try {
-    await page.setViewport({ width: 900, height: 1200, deviceScaleFactor: 2 });
+    await page.setViewport({ width: 900, height: 1200, deviceScaleFactor: 1.5 });
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
     await page.screenshot({ path: filePath, fullPage: true, type: 'png' });
   } finally {
