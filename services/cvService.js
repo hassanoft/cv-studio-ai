@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const ejs = require('ejs');
-const { getBrowser } = require('../utils/browser');
+const { getBrowser, closeBrowser } = require('../utils/browser');
 const idGenerator = require('../utils/idGenerator');
 const cvModel = require('../database/models/cvModel');
 const userModel = require('../database/models/userModel');
@@ -55,7 +55,14 @@ async function generateCv(userId, wizardData) {
     await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
     await page.screenshot({ path: filePath, fullPage: true, type: 'png' });
   } finally {
-    await page.close();
+    await page.close().catch(() => {});
+    // Ferme completement Chromium (pas seulement l'onglet) apres chaque generation.
+    // Sur une instance a memoire limitee (ex: plan gratuit Render, ~512 Mo), garder
+    // Chromium ouvert en permanence entre deux generations peut saturer la RAM et
+    // provoquer des erreurs reseau ("socket hang up") meme sur des messages texte
+    // sans rapport. Le cout est ~1-2s de relance au prochain CV/portfolio genere,
+    // ce qui est un compromis raisonnable face au risque de saturation memoire.
+    await closeBrowser();
   }
 
   cvModel.create({
