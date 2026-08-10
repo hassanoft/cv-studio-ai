@@ -20,6 +20,7 @@ const sessionMiddleware = require('./middlewares/sessionMiddleware');
 const { antiSpam } = require('./middlewares/antiSpam');
 const { telegrafErrorHandler, expressErrorHandler } = require('./middlewares/errorHandler');
 const { closeBrowser } = require('./utils/browser');
+const { withRetry } = require('./utils/retry');
 
 // Scenes (wizards)
 const cvWizardScene = require('./handlers/cvWizardScene');
@@ -110,7 +111,13 @@ async function start() {
     });
 
     const fullWebhookUrl = `${env.WEBHOOK_URL}${env.WEBHOOK_PATH}`;
-    await bot.telegram.setWebhook(fullWebhookUrl);
+    // Quelques tentatives : au demarrage a froid, la connexion sortante vers
+    // l'API Telegram peut echouer une fois (ETIMEDOUT) avant de se stabiliser.
+    await withRetry(() => bot.telegram.setWebhook(fullWebhookUrl), {
+      retries: 3,
+      delayMs: 2000,
+      label: 'configuration du webhook Telegram',
+    });
     logger.info(`[BOT] Webhook configure -> ${fullWebhookUrl}`);
   } else {
     app.use(expressErrorHandler);
