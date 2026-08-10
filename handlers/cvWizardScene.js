@@ -9,6 +9,7 @@ const { handleCancel, handleSkip, getText, getPhotoFileId } = require('./wizardH
 const { isValidPhone, isValidEmail, normalizePhone, isNonEmpty, sanitizeText } = require('../utils/validators');
 const { skipCancelInline, cancelOnlyInline, confirmGenerateInline, mainReplyKeyboard, backToMenuInline } = require('../utils/keyboards');
 const { safeDownloadPhoto } = require('../utils/telegramFile');
+const { withRetry } = require('../utils/retry');
 const creditService = require('../services/creditService');
 const cvService = require('../services/cvService');
 const userModel = require('../database/models/userModel');
@@ -290,22 +291,40 @@ const scene = new Scenes.WizardScene(
     await ctx.editMessageReplyMarkup({ inline_keyboard: [] }).catch(() => {});
     await ctx.reply('🎨 Génération de votre CV en cours, merci de patienter...');
 
+    const userId = ctx.from.id;
+    const unlimited = ctx.wizard.state.unlimited;
+
+    // 1) Generation (aucun credit n'est encore debite ici)
+    let filePath;
     try {
-      const userId = ctx.from.id;
-      const unlimited = ctx.wizard.state.unlimited;
-
-      const { filePath } = await cvService.generateCv(userId, ctx.wizard.state.data);
-      creditService.chargeForGeneration(userId, 'CV', unlimited);
-
-      const balanceNote = unlimited
-        ? '👑 Généré gratuitement grâce à votre abonnement actif.'
-        : `💳 ${formatCredits(50)} débités de votre solde.`;
-
-      await ctx.replyWithPhoto({ source: filePath }, { caption: `✅ Votre CV est prêt !\n\n${balanceNote}` });
-      await ctx.reply('Que souhaitez-vous faire ensuite ?', mainReplyKeyboard());
+      const result = await cvService.generateCv(userId, ctx.wizard.state.data);
+      filePath = result.filePath;
     } catch (err) {
       logger.error('[CV_WIZARD] Erreur de génération:', err);
-      await ctx.reply('❌ Une erreur est survenue lors de la génération de votre CV. Aucun crédit n’a été débité.');
+      await ctx.reply('❌ Une erreur est survenue lors de la génération de votre CV. Aucun crédit n’a été débité.', mainReplyKeyboard());
+      return ctx.scene.leave();
+    }
+
+    // 2) Le CV existe et est enregistre en base -> on peut debiter en toute securite
+    creditService.chargeForGeneration(userId, 'CV', unlimited);
+    const balanceNote = unlimited
+      ? '👑 Généré gratuitement grâce à votre abonnement actif.'
+      : `💳 ${formatCredits(50)} débités de votre solde.`;
+
+    // 3) Envoi (reseau) : peut echouer independamment de la generation/facturation deja actees.
+    // Plusieurs tentatives car les coupures reseau (ex: "socket hang up") sont generalement transitoires.
+    try {
+      await withRetry(
+        () => ctx.replyWithPhoto({ source: filePath }, { caption: `✅ Votre CV est prêt !\n\n${balanceNote}` }),
+        { retries: 2, delayMs: 1500, label: 'envoi du CV' }
+      );
+      await ctx.reply('Que souhaitez-vous faire ensuite ?', mainReplyKeyboard());
+    } catch (err) {
+      logger.error('[CV_WIZARD] Échec de l’envoi du CV après plusieurs tentatives:', err);
+      await ctx.reply(
+        `⚠️ Votre CV a bien été généré (${balanceNote}) mais l’envoi a échoué à cause d’un problème réseau.\n\nRécupérez-le à tout moment via "🗂 Mes créations".`,
+        mainReplyKeyboard()
+      );
     }
 
     return ctx.scene.leave();
