@@ -1,7 +1,6 @@
 /**
  * utils/browser.js
- * Gestionnaire unique d'instance Puppeteer (lazy singleton).
- * Evite de relancer Chromium a chaque generation de CV.
+ * Gestionnaire d'instance Puppeteer.
  *
  * IMPORTANT : ce projet utilise "puppeteer-core" + "@sparticuz/chromium"
  * plutot que le package "puppeteer" complet. Raison : sur certains
@@ -12,6 +11,14 @@
  * un binaire Chromium precompile et compatible avec les environnements
  * conteneurises (Render, AWS Lambda, etc.), sans etape de telechargement
  * fragile au moment du build.
+ *
+ * MEMOIRE : sur une instance a RAM limitee (plan gratuit Render, ~512 Mo),
+ * garder Chromium ouvert en permanence peut saturer la memoire et casser
+ * des requetes reseau sans rapport (y compris de simples messages texte).
+ * Ce module ne garde donc PAS Chromium ouvert entre deux generations :
+ * cvService appelle closeBrowser() juste apres chaque CV genere. Le cache
+ * "browserPromise" ci-dessous sert seulement a eviter de relancer Chromium
+ * plusieurs fois si plusieurs generations se chevauchent au meme instant.
  *
  * En local / Termux : definissez PUPPETEER_EXECUTABLE_PATH dans .env pour
  * pointer vers un Chrome/Chromium deja installe sur la machine (le binaire
@@ -44,6 +51,11 @@ async function launchBrowser() {
       ...chromium.args,
       '--disable-dev-shm-usage',
       '--disable-gpu',
+      '--disable-extensions',
+      '--disable-background-networking',
+      '--disable-default-apps',
+      '--no-zygote',
+      '--js-flags=--max-old-space-size=256',
     ],
     defaultViewport: chromium.defaultViewport,
   });
