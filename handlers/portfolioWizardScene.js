@@ -17,6 +17,7 @@ const {
   backToMenuInline,
 } = require('../utils/keyboards');
 const { safeDownloadPhoto } = require('../utils/telegramFile');
+const { withRetry } = require('../utils/retry');
 const creditService = require('../services/creditService');
 const portfolioService = require('../services/portfolioService');
 const userModel = require('../database/models/userModel');
@@ -428,21 +429,42 @@ const scene = new Scenes.WizardScene(
     await ctx.editMessageReplyMarkup({ inline_keyboard: [] }).catch(() => {});
     await ctx.reply('🎨 Génération de votre portfolio en cours, merci de patienter...');
 
+    const userId = ctx.from.id;
+    const unlimited = ctx.wizard.state.unlimited;
+
+    // 1) Generation (aucun credit n'est encore debite ici)
+    let url;
     try {
-      const userId = ctx.from.id;
-      const unlimited = ctx.wizard.state.unlimited;
-
-      const { url } = await portfolioService.generatePortfolio(userId, ctx.wizard.state.data);
-      creditService.chargeForGeneration(userId, 'PORTFOLIO', unlimited);
-
-      const balanceNote = unlimited
-        ? '👑 Généré gratuitement grâce à votre abonnement actif.'
-        : `💳 ${formatCredits(100)} débités de votre solde.`;
-
-      await ctx.reply(`✅ Votre portfolio est en ligne !\n\n🔗 ${url}\n\n${balanceNote}`, mainReplyKeyboard());
+      const result = await portfolioService.generatePortfolio(userId, ctx.wizard.state.data);
+      url = result.url;
     } catch (err) {
       logger.error('[PORTFOLIO_WIZARD] Erreur de génération:', err);
-      await ctx.reply('❌ Une erreur est survenue lors de la génération de votre portfolio. Aucun crédit n’a été débité.');
+      await ctx.reply(
+        '❌ Une erreur est survenue lors de la génération de votre portfolio. Aucun crédit n’a été débité.',
+        mainReplyKeyboard()
+      );
+      return ctx.scene.leave();
+    }
+
+    // 2) Le portfolio existe et est enregistre en base -> on peut debiter en toute securite
+    creditService.chargeForGeneration(userId, 'PORTFOLIO', unlimited);
+    const balanceNote = unlimited
+      ? '👑 Généré gratuitement grâce à votre abonnement actif.'
+      : `💳 ${formatCredits(100)} débités de votre solde.`;
+
+    // 3) Confirmation (reseau) : quelques tentatives en cas de coupure transitoire
+    try {
+      await withRetry(() => ctx.reply(`✅ Votre portfolio est en ligne !\n\n🔗 ${url}\n\n${balanceNote}`, mainReplyKeyboard()), {
+        retries: 2,
+        delayMs: 1500,
+        label: 'confirmation du portfolio',
+      });
+    } catch (err) {
+      logger.error('[PORTFOLIO_WIZARD] Échec de la confirmation après plusieurs tentatives:', err);
+      await ctx.reply(
+        `⚠️ Votre portfolio a bien été généré (${balanceNote}) mais la confirmation a échoué à cause d’un problème réseau.\n\nRetrouvez le lien à tout moment via "🗂 Mes créations".\n🔗 ${url}`,
+        mainReplyKeyboard()
+      ).catch(() => {});
     }
 
     return ctx.scene.leave();
