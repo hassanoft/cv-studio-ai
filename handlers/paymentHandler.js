@@ -11,14 +11,20 @@ const paymentService = require('../services/paymentService');
 const transactionModel = require('../database/models/transactionModel');
 const { findCreditPack, findSubscriptionPlan, formatFCFA } = require('../config/prices');
 const { paidConfirmationInline, backToMenuInline, mainReplyKeyboard } = require('../utils/keyboards');
+const { escapeMarkdownLegacy } = require('../utils/formatters');
 const logger = require('../utils/logger');
 
 function paymentPrompt(productLabel, amountFcfa, waveLink) {
+  // Le lien Wave contient des "_" (ex: M_ci_knlRyepWBd4f) qui sont des
+  // caracteres speciaux en Markdown (italique). Sans echappement,
+  // Telegram les interprete comme de la mise en forme et les supprime
+  // de l'affichage, ce qui casse le lien de paiement.
+  const safeLink = escapeMarkdownLegacy(waveLink);
   return [
     `🧾 *${productLabel}*`,
     `💰 Montant à payer : *${formatFCFA(amountFcfa)}*`,
     '',
-    `1️⃣ Effectuez le paiement via Wave : ${waveLink}`,
+    `1️⃣ Effectuez le paiement via Wave : ${safeLink}`,
     '2️⃣ Une fois le paiement effectué, tapotez sur "✅ J\'ai payé" ci-dessous.',
     '',
     "⚠️ La validation est manuelle. Vous recevrez une notification dès qu'un administrateur aura traité votre demande.",
